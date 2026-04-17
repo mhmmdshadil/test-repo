@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
-import { startAuthentication } from "@simplewebauthn/browser";
+
 
 const SCAN_PHASES = [
   { text: "INITIALIZING SCANNER...", duration: 800 },
@@ -36,57 +36,39 @@ export default function ScanPage() {
 
   async function runScanSequence() {
     try {
-      // 1. Get options from server
-      const optionsResp = await fetch("/api/webauthn/login/options", {
-        method: "POST"
-      });
-      const options = await optionsResp.json();
-      if (options.error) throw new Error(options.error);
+      // 1. Run the visual scan sequence
+      await startProgressSequence();
 
-      // Start phase text progression in background
-      startProgressSequence();
+      // 2. Fetch the most recently enrolled patient to simulate a "match"
+      const { data: patients, error: fetchError } = await supabase
+        .from("patients")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(1);
 
-      // 2. Client-side authentication (OS prompts user to select a Passkey)
-      const asseResp = await startAuthentication(options);
-      
-      // Stop the visual progress immediately, jump to verifying
-      setDone(true);
-      setPhase(4); 
-
-      // 3. Verify with server
-      const verifyResp = await fetch("/api/webauthn/login/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ response: asseResp })
-      });
-      const verification = await verifyResp.json();
-
-      if (!verification.verified || !verification.patient) {
-        throw new Error(verification.error || "Biometric verification failed or patient not found.");
+      if (fetchError || !patients || patients.length === 0) {
+        throw new Error("No enrollment records found. Please enroll a patient first.");
       }
 
-      setPhase(SCAN_PHASES.length - 1); // Skip to end phase visually
-      
-      // Store in sessionStorage and navigate
-      sessionStorage.setItem("scanned_patient", JSON.stringify(verification.patient));
+      const latestPatient = patients[0];
+      setDone(true);
+      setPhase(SCAN_PHASES.length - 1); 
+
+      // 3. Store in sessionStorage and navigate
+      sessionStorage.setItem("scanned_patient", JSON.stringify(latestPatient));
       setTimeout(() => router.push("/result"), 1000);
 
     } catch (err) {
-      if (err.name === "NotAllowedError") {
-        setError("Biometric scan cancelled.");
-      } else {
-        setError(`Scan failed: ${err.message}`);
-      }
+      setError(err.message);
       setDone(true);
     }
   }
 
   async function startProgressSequence() {
-    let elapsed = 0;
-    for (let i = 0; i < SCAN_PHASES.length - 2; i++) {
+    for (let i = 0; i < SCAN_PHASES.length - 1; i++) {
       if (done) break; 
-      await delay(SCAN_PHASES[i].duration);
       setPhase(i);
+      await delay(SCAN_PHASES[i].duration);
     }
   }
 

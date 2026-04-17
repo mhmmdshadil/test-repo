@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
-import { startRegistration } from "@simplewebauthn/browser";
 
 const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Unknown"];
 
@@ -81,30 +80,10 @@ export default function EnrollPage() {
 
       const newPatient = insertData;
 
-      // --- Biometric Enrollement via WebAuthn ---
-      // 1. Get options from server
-      const optionsResp = await fetch("/api/webauthn/register/options", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ patientId: newPatient.id, patientName: newPatient.name })
-      });
-      const options = await optionsResp.json();
-      if (options.error) throw new Error(options.error);
+      // --- Simulated Biometric Enrollment ---
+      // Instead of real WebAuthn, we simulate a premium scan experience for the demo
+      await new Promise(resolve => setTimeout(resolve, 3000)); 
 
-      // 2. Client-side registration (OS prompts user for face/fingerprint)
-      const attResp = await startRegistration(options);
-
-      // 3. Send back to server for verification
-      const verifyResp = await fetch("/api/webauthn/register/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ response: attResp, patientId: newPatient.id })
-      });
-      const verification = await verifyResp.json();
-
-      if (!verification.verified) {
-        throw new Error(verification.error || "Biometric verification failed.");
-      }
 
       setSuccess(true);
       setForm({ name: "", blood_type: "", allergies: "", contact: "" });

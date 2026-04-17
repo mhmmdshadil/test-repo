@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyRegistrationResponse } from "@simplewebauthn/server";
 import { cookies } from "next/headers";
-import { supabase } from "../../../../../lib/supabaseClient";
+import { createServerSupabase } from "../../../../../lib/supabaseServer";
 
 function getRpID() {
   if (process.env.NODE_ENV === "development") return "localhost";
@@ -33,6 +33,7 @@ export async function POST(req) {
     const rpID = getRpID();
     const expectedOrigin = getExpectedOrigin();
 
+    const supabase = createServerSupabase();
     const verification = await verifyRegistrationResponse({
       response,
       expectedChallenge,

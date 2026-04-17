@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyAuthenticationResponse } from "@simplewebauthn/server";
 import { cookies } from "next/headers";
-import { supabase } from "../../../../../lib/supabaseClient";
+import { createServerSupabase } from "../../../../../lib/supabaseServer";
 
 function getRpID() {
   if (process.env.NODE_ENV === "development") return "localhost";
@@ -30,8 +30,9 @@ export async function POST(req) {
       return NextResponse.json({ error: "Challenge expired or missing" }, { status: 400 });
     }
 
-    // Attempt to looking up the user's credential by the ID provided in the response
-    const credentialIdStr = response.id; // It's base64url encoded
+    // Attempt to look up the credential by the ID provided in the response
+    const credentialIdStr = response.id; // base64url encoded
+    const supabase = createServerSupabase();
 
     const { data: credData, error: credError } = await supabase
       .from("webauthn_credentials")

@@ -2,10 +2,16 @@ import { NextResponse } from "next/server";
 import { generateAuthenticationOptions } from "@simplewebauthn/server";
 import { cookies } from "next/headers";
 
-const rpID = process.env.NODE_ENV === "development" ? "localhost" : "red-pulse-web.netlify.app"; 
+function getRpID() {
+  if (process.env.NODE_ENV === "development") return "localhost";
+  if (process.env.NEXT_PUBLIC_APP_URL) return new URL(process.env.NEXT_PUBLIC_APP_URL).hostname;
+  if (process.env.VERCEL_URL) return process.env.VERCEL_URL.replace(/^https?:\/\//, "");
+  return "localhost";
+}
 
 export async function POST() {
   try {
+    const rpID = getRpID();
     const options = await generateAuthenticationOptions({
       rpID,
       userVerification: "required",

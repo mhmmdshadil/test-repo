@@ -3,8 +3,14 @@ import { generateRegistrationOptions } from "@simplewebauthn/server";
 import { cookies } from "next/headers";
 
 const rpName = "Emergency ID";
-const rpID = process.env.NODE_ENV === "development" ? "localhost" : "red-pulse-web.netlify.app"; 
-// Adjust rpID as needed for production. Must match the domain where it's hosted.
+
+// Dynamically resolve the RP ID from env vars — works on Vercel, Netlify, or locally
+function getRpID() {
+  if (process.env.NODE_ENV === "development") return "localhost";
+  if (process.env.NEXT_PUBLIC_APP_URL) return new URL(process.env.NEXT_PUBLIC_APP_URL).hostname;
+  if (process.env.VERCEL_URL) return process.env.VERCEL_URL.replace(/^https?:\/\//, "");
+  return "localhost";
+}
 
 export async function POST(req) {
   try {
@@ -21,6 +27,7 @@ export async function POST(req) {
       displayName: patientName,
     };
 
+    const rpID = getRpID();
     const options = await generateRegistrationOptions({
       rpName,
       rpID,

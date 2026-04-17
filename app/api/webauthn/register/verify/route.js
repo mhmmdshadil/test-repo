@@ -3,8 +3,19 @@ import { verifyRegistrationResponse } from "@simplewebauthn/server";
 import { cookies } from "next/headers";
 import { supabase } from "../../../../../lib/supabaseClient";
 
-const rpID = process.env.NODE_ENV === "development" ? "localhost" : "red-pulse-web.netlify.app"; 
-const expectedOrigin = process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://red-pulse-web.netlify.app";
+function getRpID() {
+  if (process.env.NODE_ENV === "development") return "localhost";
+  if (process.env.NEXT_PUBLIC_APP_URL) return new URL(process.env.NEXT_PUBLIC_APP_URL).hostname;
+  if (process.env.VERCEL_URL) return process.env.VERCEL_URL.replace(/^https?:\/\//, "");
+  return "localhost";
+}
+
+function getExpectedOrigin() {
+  if (process.env.NODE_ENV === "development") return "http://localhost:3000";
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "http://localhost:3000";
+}
 
 export async function POST(req) {
   try {
@@ -18,6 +29,9 @@ export async function POST(req) {
     if (!expectedChallenge) {
       return NextResponse.json({ error: "Challenge expired or missing" }, { status: 400 });
     }
+
+    const rpID = getRpID();
+    const expectedOrigin = getExpectedOrigin();
 
     const verification = await verifyRegistrationResponse({
       response,

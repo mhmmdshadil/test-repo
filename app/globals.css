@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --crimson: #DC143C;
+  --alert: #FF3B3B;
+  --pulse: #00D4FF;
+  --steel: #1A2332;
+  --midnight: #0D1421;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* Scanline overlay texture */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.grid-bg {
+  background-image: 
+    linear-gradient(rgba(0, 212, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #00D4FF, transparent);
+  box-shadow: 0 0 20px #00D4FF, 0 0 40px rgba(0,212,255,0.4);
+  animation: scanMove 2s linear infinite;
+}
+
+@keyframes scanMove {
+  0% { top: 0%; }
+  100% { top: 100%; }
+}
+
+.pulse-ring {
+  animation: pulseRing 1.5s ease-out infinite;
+}
+
+@keyframes pulseRing {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+.text-glitch {
+  animation: glitchText 3s infinite;
+}
+
+@keyframes glitchText {
+  0%, 90%, 100% { 
+    clip-path: none;
+    transform: translate(0);
+    text-shadow: none;
+  }
+  92% { 
+    transform: translate(-2px, 0);
+    text-shadow: 2px 0 #FF3B3B;
+  }
+  94% { 
+    transform: translate(2px, 0);
+    text-shadow: -2px 0 #00D4FF;
+  }
+  96% { 
+    transform: translate(0);
+    text-shadow: none;
+  }
+}
+
+.card-glow {
+  box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.2), 
+              0 20px 40px rgba(0, 0, 0, 0.6),
+              inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.alert-glow {
+  box-shadow: 0 0 0 1px rgba(220, 20, 60, 0.4),
+              0 0 30px rgba(220, 20, 60, 0.2);
+}
+
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.btn-primary:hover::before {
+  opacity: 1;
+}
+
+.fingerprint-svg path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawPrint 2s ease forwards;
+}
+
+@keyframes drawPrint {
+  to { stroke-dashoffset: 0; }
+}
+
+input:focus, select:focus {
+  outline: none;
+}
+
+.status-badge {
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}

@@ -2,15 +2,7 @@ import { NextResponse } from "next/server";
 import { verifyAuthenticationResponse } from "@simplewebauthn/server";
 import { cookies } from "next/headers";
 import { createServerSupabase } from "../../../../../lib/supabaseServer";
-
-function getWebAuthnConfig(req) {
-  const host = req.headers.get("host"); // e.g. test-repo.vercel.app
-  const protocol = req.headers.get("x-forwarded-proto") || "https";
-  const origin = `${protocol}://${host}`;
-  const rpID = host.split(":")[0]; // hostname without port
-  
-  return { rpID, origin };
-}
+import { getWebAuthnConfig } from "../../../../../lib/webauthnConfig";
 
 export async function POST(req) {
   try {

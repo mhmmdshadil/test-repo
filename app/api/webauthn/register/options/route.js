@@ -2,18 +2,13 @@ import { NextResponse } from "next/server";
 import { generateRegistrationOptions } from "@simplewebauthn/server";
 import { cookies } from "next/headers";
 
-const rpName = "Emergency ID";
+import { getWebAuthnConfig } from "../../../../../lib/webauthnConfig";
 
-// Dynamically resolve the RP ID from env vars — works on Vercel, Netlify, or locally
-function getRpID() {
-  if (process.env.NODE_ENV === "development") return "localhost";
-  if (process.env.NEXT_PUBLIC_APP_URL) return new URL(process.env.NEXT_PUBLIC_APP_URL).hostname;
-  if (process.env.VERCEL_URL) return process.env.VERCEL_URL.replace(/^https?:\/\//, "");
-  return "localhost";
-}
+const rpName = "Emergency ID";
 
 export async function POST(req) {
   try {
+    const { rpID } = getWebAuthnConfig(req);
     const body = await req.json();
     const { patientId, patientName } = body;
 
@@ -27,7 +22,6 @@ export async function POST(req) {
       displayName: patientName,
     };
 
-    const rpID = getRpID();
     const options = await generateRegistrationOptions({
       rpName,
       rpID,

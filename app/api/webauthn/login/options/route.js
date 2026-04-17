@@ -2,16 +2,11 @@ import { NextResponse } from "next/server";
 import { generateAuthenticationOptions } from "@simplewebauthn/server";
 import { cookies } from "next/headers";
 
-function getRpID() {
-  if (process.env.NODE_ENV === "development") return "localhost";
-  if (process.env.NEXT_PUBLIC_APP_URL) return new URL(process.env.NEXT_PUBLIC_APP_URL).hostname;
-  if (process.env.VERCEL_URL) return process.env.VERCEL_URL.replace(/^https?:\/\//, "");
-  return "localhost";
-}
+import { getWebAuthnConfig } from "../../../../../lib/webauthnConfig";
 
-export async function POST() {
+export async function POST(req) {
   try {
-    const rpID = getRpID();
+    const { rpID } = getWebAuthnConfig(req);
     const options = await generateAuthenticationOptions({
       rpID,
       userVerification: "required",

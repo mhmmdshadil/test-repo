@@ -2,18 +2,13 @@ import { NextResponse } from "next/server";
 import { verifyRegistrationResponse } from "@simplewebauthn/server";
 import { cookies } from "next/headers";
 import { createServerSupabase } from "../../../../../lib/supabaseServer";
-
-function getWebAuthnConfig(req) {
-  const host = req.headers.get("host"); // e.g. test-repo.vercel.app
-  const protocol = req.headers.get("x-forwarded-proto") || "https";
-  const origin = `${protocol}://${host}`;
-  const rpID = host.split(":")[0]; // hostname without port
-  
-  return { rpID, origin };
-}
+import { getWebAuthnConfig } from "../../../../../lib/webauthnConfig";
 
 export async function POST(req) {
   try {
+    const { rpID, origin: expectedOrigin } = getWebAuthnConfig(req);
+    console.log(`[Register] Verifying for RP ID: ${rpID}, Origin: ${expectedOrigin}`);
+
     const body = await req.json();
     const { response, patientId } = body;
     
@@ -24,9 +19,6 @@ export async function POST(req) {
     if (!expectedChallenge) {
       return NextResponse.json({ error: "Challenge expired or missing" }, { status: 400 });
     }
-
-    const { rpID, origin: expectedOrigin } = getWebAuthnConfig(req);
-    console.log(`[Register] Verifying for RP ID: ${rpID}, Origin: ${expectedOrigin}`);
 
     const supabase = createServerSupabase();
     const verification = await verifyRegistrationResponse({

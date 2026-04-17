@@ -36,9 +36,9 @@ export async function POST(req) {
       userDisplayName: user.displayName,
       attestationType: "none",
       authenticatorSelection: {
-        authenticatorAttachment: "platform",
-        userVerification: "required",
-        residentKey: "required", 
+        authenticatorAttachment: "platform", // Forces device biometrics (fingerprint/face), not USB keys
+        userVerification: "required",        // Fingerprint scan is mandatory
+        residentKey: "preferred",            // "preferred" avoids forcing passkey-manager UI
       },
       supportedAlgorithmIDs: [-7, -257], // ES256 and RS256
     });

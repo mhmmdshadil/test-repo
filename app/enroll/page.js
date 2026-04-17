@@ -110,7 +110,7 @@ export default function EnrollPage() {
       setForm({ name: "", blood_type: "", allergies: "", contact: "" });
     } catch (err) {
       if (err.name === "NotAllowedError") {
-        setError("Biometric registration cancelled. The patient record may have been created, but biometrics were not linked.");
+        setError("Fingerprint scan cancelled or timed out. Patient record created — please retry to link their fingerprint.");
       } else if (err instanceof TypeError && err.message === "Failed to fetch") {
         setError("Network error: Cannot reach the database. Please check your internet connection.");
       } else {
@@ -149,7 +149,7 @@ export default function EnrollPage() {
         <div className="mb-8">
           <p className="font-mono text-crimson/60 text-xs tracking-widest mb-1">PATIENT REGISTRATION PROTOCOL</p>
           <h1 className="font-display text-5xl tracking-wide text-white">NEW PATIENT</h1>
-          <p className="text-white/40 text-sm mt-2">Complete all required fields. Data is encrypted and stored securely.</p>
+          <p className="text-white/40 text-sm mt-2">Fill in patient details. After saving, you will be asked to scan the patient&apos;s fingerprint to link their biometric identity.</p>
         </div>
 
         {/* Success message */}
@@ -274,10 +274,10 @@ export default function EnrollPage() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                     </svg>
-                    SAVING TO DATABASE...
+                    SCANNING FINGERPRINT...
                   </span>
                 ) : (
-                  "ENROLL PATIENT →"
+                  "ENROLL + SCAN FINGERPRINT →"
                 )}
               </button>
             </div>
@@ -285,8 +285,11 @@ export default function EnrollPage() {
         </div>
 
         {/* Info note */}
-        <div className="mt-4 bg-pulse/5 border border-pulse/10 rounded-xl px-5 py-4">
-          <p className="font-mono text-xs text-pulse/40 tracking-wider">
+        <div className="mt-4 bg-pulse/5 border border-pulse/10 rounded-xl px-5 py-4 space-y-2">
+          <p className="font-mono text-xs text-pulse/60 tracking-wider">
+            👆 AFTER SAVING, PLACE THE PATIENT&apos;S FINGER ON YOUR DEVICE&apos;S FINGERPRINT SENSOR WHEN PROMPTED
+          </p>
+          <p className="font-mono text-xs text-pulse/30 tracking-wider">
             ⚡ ALL DATA IS ENCRYPTED IN TRANSIT AND AT REST · HIPAA COMPLIANT STORAGE
           </p>
         </div>

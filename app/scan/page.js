@@ -62,7 +62,7 @@ export default function ScanPage() {
       const verification = await verifyResp.json();
 
       if (!verification.verified || !verification.patient) {
-        throw new Error("Biometric verification failed or patient not found.");
+        throw new Error(verification.error || "Biometric verification failed or patient not found.");
       }
 
       setPhase(SCAN_PHASES.length - 1); // Skip to end phase visually

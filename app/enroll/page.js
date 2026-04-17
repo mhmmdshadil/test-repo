@@ -103,7 +103,7 @@ export default function EnrollPage() {
       const verification = await verifyResp.json();
 
       if (!verification.verified) {
-        throw new Error("Biometric verification failed.");
+        throw new Error(verification.error || "Biometric verification failed.");
       }
 
       setSuccess(true);

@@ -3,18 +3,13 @@ import { verifyAuthenticationResponse } from "@simplewebauthn/server";
 import { cookies } from "next/headers";
 import { createServerSupabase } from "../../../../../lib/supabaseServer";
 
-function getRpID() {
-  if (process.env.NODE_ENV === "development") return "localhost";
-  if (process.env.NEXT_PUBLIC_APP_URL) return new URL(process.env.NEXT_PUBLIC_APP_URL).hostname;
-  if (process.env.VERCEL_URL) return process.env.VERCEL_URL.replace(/^https?:\/\//, "");
-  return "localhost";
-}
-
-function getExpectedOrigin() {
-  if (process.env.NODE_ENV === "development") return "http://localhost:3000";
-  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "http://localhost:3000";
+function getWebAuthnConfig(req) {
+  const host = req.headers.get("host"); // e.g. test-repo.vercel.app
+  const protocol = req.headers.get("x-forwarded-proto") || "https";
+  const origin = `${protocol}://${host}`;
+  const rpID = host.split(":")[0]; // hostname without port
+  
+  return { rpID, origin };
 }
 
 export async function POST(req) {
@@ -47,11 +42,10 @@ export async function POST(req) {
     const { public_key, sign_count, patients: patient } = credData;
 
     // Convert string base64url back to Uint8Array required by simplewebauthn
-    // Convert string base64url back to Uint8Array required by simplewebauthn
     const publicKeyBuffer = new Uint8Array(Buffer.from(public_key, 'base64url'));
 
-    const rpID = getRpID();
-    const expectedOrigin = getExpectedOrigin();
+    const { rpID, origin: expectedOrigin } = getWebAuthnConfig(req);
+    console.log(`[Login] Verifying for RP ID: ${rpID}, Origin: ${expectedOrigin}`);
 
     const verification = await verifyAuthenticationResponse({
       response,
